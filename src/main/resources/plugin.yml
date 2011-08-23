@@ -1,0 +1,170 @@
+name: Places
+main: net.preoccupied.bukkit.places.PlacesPlugin
+version: 0.1
+author: obriencj@gmail.com
+database: true
+description: 
+
+commands:
+  home:
+    description:
+    usage: /home
+    permission: preoccupied.places.home
+
+  set-home:
+    description:
+    usage: /set-home
+    permission: preoccupied.places.home
+
+  visit:
+    description: Teleports to a player or place
+    usage: /visit DESTINATION
+    permission: preoccupied.places.visit
+
+  graveyard:
+    description:
+    usage: /graveyard
+    aliases: [gy, ]
+    permission: preoccupied.places.graveyard
+    
+  return:
+    description: Undoes previous /visit, /home, /graveyard
+    usage: /return
+    permission: preoccupied.places.return
+
+  spawn:
+    description: Goes to the world spawn place
+    usage: /spawn
+    permission: preoccupied.places.spawn
+
+  set-spawn:
+    description: Set the world spawn
+    usage: /set-spawn [PLACE_NAME]
+    permission: preoccupied.places.setspawn
+    
+  add-place:
+    description:
+    usage: /add-place PLACE_NAME [WEIGHT]
+    permission: preoccupied.places.edit
+
+  remove-place:
+    description:
+    usage: /remove-place PLACE_NAME
+    permission: preoccupied.places.edit
+
+  set-place-weight:
+    description:
+    usage: /set-place-weight PLACE_NAME WEIGHT
+    permission: preoccupied.places.edit
+
+  set-place:
+    description:
+    usage: /set-place PLACE_NAME [WEIGHT]
+    permission: preoccupied.places.edit
+
+  set-place-entrance:
+    description:
+    usage: /set-place-entrance [PLACE_NAME]
+    permission: preoccupied.places.edit
+    
+  set-place-graveyard:
+    description:
+    usage: /set-place-graveyard [PLACE_NAME]
+    permission: preoccupied.places.edit
+
+  whereis:
+    description:
+    usage: /whereis PLAYER_NAME
+    permission: preoccupied.places.whereis
+
+  whereami:
+    description:
+    usage: /whereami
+    permission: preoccupied.places.whereami
+
+  jail:
+    description:
+    usage: /jail PLAYER_NAME [MINUTES]
+    permission: preoccupied.places.jail
+
+  free:
+    description:
+    usage: /unjail PLAYER_NAME
+    permission: preoccupied.places.jail
+
+
+
+permission:
+  preoccupied.places.admin:
+    description: Admin permissions
+    default: op
+    children:
+      preoccupied.places.home: true
+      preoccupied.places.visit: true
+      preoccupied.places.graveyard: true
+      preoccupied.places.spawn: true
+      preoccupied.places.return: true
+      preoccupied.places.bring: true
+      preoccupied.places.setspawn: true
+      preoccupied.places.edit: true
+      preoccupied.places.whereis: true
+      preoccupied.places.whereami: true
+      preoccupied.places.jail: true
+
+  preoccupied.places.advanced:
+    description: Advanced users
+    default: false
+    children:
+      preoccupied.places.home: true
+      preoccupied.places.visit: true
+      preoccupied.places.graveyard: true
+      preoccupied.places.spawn: true
+      preoccupied.places.return: true
+      preoccupied.places.edit: true
+      preoccupied.places.whereami: true
+
+  preoccupied.places.member:
+    description: Normal users
+    default: false
+    children:
+      preoccupied.places.home: true
+      preoccupied.places.spawn: true
+      preoccupied.places.return: true
+      preoccupied.places.whereami: true
+      
+  preoccupied.places.home:
+    default: false
+
+  preoccupied.places.visit:
+    default: false
+
+  preoccupied.places.graveyard:
+    default: false
+
+  preoccupied.places.spawn:
+    default: false
+
+  preoccupied.places.return:
+    default: false
+
+  preoccupied.places.bring:
+    default: false
+    
+  preoccupied.places.setspawn:
+    default: false
+
+  preoccupied.places.edit:
+    default: false
+
+  preoccupied.places.whereis:
+    default: false
+
+  preoccupied.places.whereami:
+    default: false
+
+  preoccupied.places.jail:
+    default: false
+
+    
+
+# The end.
