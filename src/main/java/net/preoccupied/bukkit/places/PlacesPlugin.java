@@ -89,6 +89,24 @@ public class PlacesPlugin extends JavaPlugin {
 
 
 
+    private void saveReturn(Player player) {
+	returnLocations.put(player.getName(), player.getLocation());
+    }
+
+
+
+    private Location getReturn(Player player) {
+	return returnLocations.get(player.getName());
+    }
+
+
+
+    private void clearReturn(Player player) {
+	returnLocations.remove(player.getName());
+    }
+
+
+
     private Place getHome(Player player) {
 	return getHome(player.getLocation().getWorld().getName(), player.getName());
     }
@@ -243,6 +261,16 @@ public class PlacesPlugin extends JavaPlugin {
 
 	new PermissionCommand(this, "return") {
 	    public boolean run(Player p) {
+		Location r = getReturn(p);
+
+		if(r == null) {
+		    msg(p, "You have no return point stored.");
+
+		} else {
+		    clearReturn(p);
+		    teleportQueue.safeTeleport(p, r);
+		}
+
 		return true;
 	    }
 	};
