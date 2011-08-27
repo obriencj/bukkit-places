@@ -1,0 +1,104 @@
+
+This is a plugin for the Bukkit Minecraft server.
+
+The Places plugin adds support for in-game locations, as well as
+adding simple /home support. It uses the built-in bukkit permissions
+and persistance APIs.
+
+
+=== Places ===
+
+A place is consists of the following:
+ - a name
+ - a weight (radius)
+ - a center point (location)
+ - an entrance (location)
+ - a graveyard (location)
+
+
+=== Using Places ===
+
+A player is considerd "inside" of a place if their X,Y,Z distance from
+the center point is less than the weight.
+
+A player is considered "above" or "below" a place if they are outside
+of the sphere of the place, but within the vertical cylinder.
+
+At player death (or more namely, player respawn) the nearest place
+sphere is discovered, and the player is teleported to the graveyard
+location for that place.
+
+A player may discover which place is nearest, and its relative
+direction to their current location, via the /whereami command. Eg:
+
+[q] /whereami
+[r] You are northwest of TheHomestead.
+
+
+=== Home, Visit, Return ===
+
+A player may set a home via the /set-home command. This will save
+their current location. A player may have one home for each world on
+the server.
+
+A player may use the /home command to instantly be teleported to their
+home on the current world.
+
+A player may use the /visit command to instantly be teleported to
+another player, on any world.
+
+A player may use the /visit-place [world] command to instantly be
+teleported to the entrance location of a place.
+
+After using /home, /spawn, /visit, or /visit-place, the player may
+issue the /return command to be sent back to wherever they were before
+they issued the teleporting command. Only one return location is
+stored per-player, and it is lost when the server restarts or the
+plugin reloads. Death does not cause the return location to be
+overwritten, nor does logging out.
+
+The home, visit, and return commands all have their own individual
+permission nodes, so these features may be granted as the admin sees
+fit.
+
+
+=== Why use this plugin ===
+
+I wrote this plugin because I was interested in having more localized
+respawning in the event of player death. I like the concept from many
+MMOs, in that if you die near a town, you'll respawn in that town's
+graveyard. I had been using SpawnControl prior to writing this, so at
+death I would respawn back at my home location, which would often be
+very far from where I'd actually been playing.
+
+An example use case for a place would be a town or a castle. An editor
+would create a place centered on the middle of the town or castle and
+give it an appropriate weight (radius) such that the structure was
+entirely contained. The editor could then set an in-game graveyard or
+crypt or inn to be the graveyard location, and could set the town
+gates or town square to be the entrance. A player who was mining in a
+nearby mountain could then see the town in their /whereami
+information, and in the event of their death they would respawn at the
+graveyard or crypt. If they then wished to go to their home, they
+could issue a /home command.
+
+The /visit and /return command pair are something I have wanted for a
+long time. I would be working on a project, and my daughter or
+girlfriend would say, "hey come see what I found" or would want to
+show me progress on their building. I would teleport to them, but then
+I'd have to take a portal and walk all the way back to where I
+was. With this plugin, I can simply /visit them, look around for a
+while, and when I was done, I could /return to whatever I'd been doing
+on my own.
+
+I also wrote this because I was migrating to the built-in permissions
+API, and didn't want to have to run an adapter plugin to provide faux
+Permissions for SpawnControl.
+
+
+=== Future ===
+
+I'd like to add a /nearby command to list the three or four closest
+places and the direction they are in. I'd also like to consider ways
+to integrate in-game beds, but am not sure if it's worthwhile or even
+what the appropriate feature would do. It needs more thinking!
