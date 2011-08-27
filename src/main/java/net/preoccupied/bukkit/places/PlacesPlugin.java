@@ -423,6 +423,7 @@ public class PlacesPlugin extends JavaPlugin {
 
 	new PermissionCommand(this, "remove-place") {
 	    public boolean run(Player p, String n) {
+		err(p, "unimplemented")
 		return true;
 	    }
 	};
@@ -571,6 +572,7 @@ public class PlacesPlugin extends JavaPlugin {
 
 	new PermissionCommand(this, "nearby") {
 	    public boolean run(Player p) {
+		err(p, "unimplemented")
 		return true;
 	    }
 	};
@@ -578,10 +580,12 @@ public class PlacesPlugin extends JavaPlugin {
 
 	new PermissionCommand(this, "jail") {
 	    public boolean run(Player p, String n) {
+		err(p, "unimplemented")
 		return true;
 	    }
 
 	    public boolean run(Player p, String n, String minutes) {
+		err(p, "unimplemented")
 		return true;
 	    }
 	};
@@ -589,6 +593,7 @@ public class PlacesPlugin extends JavaPlugin {
 
 	new PermissionCommand(this, "unjail") {
 	    public boolean run(Player p, String n) {
+		err(p, "unimplemented")
 		return true;
 	    }
 	};

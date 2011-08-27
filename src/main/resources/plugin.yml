@@ -17,10 +17,15 @@ commands:
     permission: preoccupied.places.home
 
   visit:
-    description: Teleports to a player or place
-    usage: /visit DESTINATION
+    description: Teleports to another player
+    usage: /visit PLAYER_NAME
     permission: preoccupied.places.visit
 
+  visit-place:
+    description: Teleports to a place
+    usage: /visit-place [WORLD] PLACENAME
+    permission: preoccupied.places.visitplace
+    
   graveyard:
     description:
     usage: /graveyard
@@ -28,7 +33,7 @@ commands:
     permission: preoccupied.places.graveyard
     
   return:
-    description: Undoes previous /visit, /home, /graveyard
+    description: Undoes previous /visit, /visit-place, /home, /graveyard, or /spawn
     usage: /return
     permission: preoccupied.places.return
 
@@ -106,6 +111,7 @@ permissions:
     children:
       preoccupied.places.home: true
       preoccupied.places.visit: true
+      preoccupied.places.visitplace: true
       preoccupied.places.graveyard: true
       preoccupied.places.spawn: true
       preoccupied.places.return: true
@@ -123,6 +129,7 @@ permissions:
     children:
       preoccupied.places.home: true
       preoccupied.places.visit: true
+      preoccupied.places.visitplace: true
       preoccupied.places.graveyard: true
       preoccupied.places.spawn: true
       preoccupied.places.return: true
