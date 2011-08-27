@@ -82,19 +82,24 @@ commands:
     usage: /whereami
     permission: preoccupied.places.whereami
 
+  nearby:
+    description:
+    usage: /nearby
+    permission: preoccupied.places.nearby
+    
   jail:
     description:
     usage: /jail PLAYER_NAME [MINUTES]
     permission: preoccupied.places.jail
 
-  free:
+  unjail:
     description:
     usage: /unjail PLAYER_NAME
     permission: preoccupied.places.jail
 
 
 
-permission:
+permissions:
   preoccupied.places.admin:
     description: Admin permissions
     default: op
@@ -109,6 +114,7 @@ permission:
       preoccupied.places.edit: true
       preoccupied.places.whereis: true
       preoccupied.places.whereami: true
+      preoccupied.places.nearby: true
       preoccupied.places.jail: true
 
   preoccupied.places.advanced:
@@ -122,6 +128,7 @@ permission:
       preoccupied.places.return: true
       preoccupied.places.edit: true
       preoccupied.places.whereami: true
+      preoccupied.places.nearby: true
 
   preoccupied.places.member:
     description: Normal users
@@ -160,6 +167,9 @@ permission:
     default: false
 
   preoccupied.places.whereami:
+    default: false
+
+  preoccupied.places.nearby:
     default: false
 
   preoccupied.places.jail:

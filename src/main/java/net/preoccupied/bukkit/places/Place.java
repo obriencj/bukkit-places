@@ -52,6 +52,16 @@ public class Place {
     private float graveyardYaw = 0.0f;
 
 
+    public void setId(int id) {
+	this.id = id;
+    }
+
+
+    public int getId() {
+	return this.id;
+    }
+
+
     public void setName(String name) {
 	this.name = name;
     }
@@ -98,6 +108,7 @@ public class Place {
 	    setSpot_x(l.getBlockX());
 	    setSpot_y(l.getBlockY());
 	    setSpot_z(l.getBlockZ());
+	    setSpotYaw(l.getYaw());
 
 	} else {
 	    setSpot_w(null);
@@ -109,9 +120,7 @@ public class Place {
 
 
     public Location getSpot() {
-	Location l = asLocation(spot_w, spot_x, spot_y, spot_z);
-	l.setYaw(spotYaw);
-	return l;
+	return asLocation(spot_w, spot_x, spot_y, spot_z, spotYaw);
     }
 
 
@@ -138,9 +147,7 @@ public class Place {
 
 
     public Location getEntrance() {
-	Location l = asLocation(entrance_w, entrance_x, entrance_y, entrance_z);
-	l.setYaw(entranceYaw);
-	return l;
+	return asLocation(entrance_w, entrance_x, entrance_y, entrance_z, entranceYaw);
     }
 
 
@@ -162,9 +169,7 @@ public class Place {
 
 
     public Location getGraveyard() {
-	Location l = asLocation(graveyard_w, graveyard_x, graveyard_y, graveyard_z);
-	l.setYaw(graveyardYaw);
-	return l;
+	return asLocation(graveyard_w, graveyard_x, graveyard_y, graveyard_z, graveyardYaw);
     }
 
 
@@ -205,6 +210,16 @@ public class Place {
     
     public int getSpot_z() {
 	return this.spot_z;
+    }
+
+
+    public void setSpotYaw(float yaw) {
+	this.spotYaw = yaw;
+    }
+
+
+    public float getSpotYaw() {
+	return this.spotYaw;
     }
 
 
@@ -315,6 +330,14 @@ public class Place {
 	if (world == null) return null;
 
 	return new Location(world, (double) x + 0.5d, (double) y, (double) z + 0.5d);
+    }
+
+
+
+    private static Location asLocation(String w, int x, int y, int z, float yaw) {
+	Location l = asLocation(w, x, y, z);
+	if(l != null) l.setYaw(yaw);
+	return l;
     }
 
 

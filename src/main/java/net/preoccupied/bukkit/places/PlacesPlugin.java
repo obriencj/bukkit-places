@@ -10,6 +10,13 @@ import javax.persistence.PersistenceException;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
+import org.bukkit.event.Event.Priority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.plugin.EventExecutor;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import net.preoccupied.bukkit.TeleportQueue;
@@ -22,6 +29,8 @@ public class PlacesPlugin extends JavaPlugin {
 
     public static final String SPAWN_NAME = "spawn";
 
+    public static final String JAIL_NAME = "jail";
+
 
     private Map<String,Map<String,Place>> placesByName = null;
     private Map<String,Map<String,Place>> homesByOwner = null;
@@ -33,8 +42,6 @@ public class PlacesPlugin extends JavaPlugin {
 
 
     public void onEnable() {
-	System.out.println("Places.onEnable()");
-
 	placesByName = new HashMap<String,Map<String,Place>>();
 	homesByOwner = new HashMap<String,Map<String,Place>>();
 
@@ -45,7 +52,26 @@ public class PlacesPlugin extends JavaPlugin {
 
 	loadPlaces();
 
+	PluginManager pm = getServer().getPluginManager();
+	EventExecutor ee = null;
+
+	ee = new EventExecutor() {
+		public void execute(Listener ignored, Event e) {
+		    onPlayerJoin((PlayerJoinEvent) e);
+		}
+	    };
+	pm.registerEvent(Event.Type.PLAYER_JOIN, null, ee, Priority.Low, this);
+
+	ee = new EventExecutor() {
+		public void execute(Listener ignored, Event e) {
+		    onPlayerRespawn((PlayerRespawnEvent) e);
+		}
+	    };
+	pm.registerEvent(Event.Type.PLAYER_RESPAWN, null, ee, Priority.Low, this);
+
 	setupCommands();
+
+	getServer().getLogger().info(this + " is enabled");
     }
 
 
@@ -55,6 +81,8 @@ public class PlacesPlugin extends JavaPlugin {
 	homesByOwner.clear();
 	returnLocations.clear();
 	teleportQueue.disable();
+
+	getServer().getLogger().info(this + " is disabled");
     }
 
 
@@ -121,6 +149,12 @@ public class PlacesPlugin extends JavaPlugin {
 
 
 
+    private Place getPlace(Player player, String name) {
+	return getPlace(player.getWorld().getName(), name);
+    }
+
+
+
     private Place getPlace(String world, String name) {
 	Map<String,Place> ps = placesByName.get(world);
 	if(ps == null) return null;
@@ -128,7 +162,7 @@ public class PlacesPlugin extends JavaPlugin {
     }
 
 
-
+    
     private Place createHome(Player p) {
 	return createHome(p.getName(), p.getLocation());
     }
@@ -151,6 +185,8 @@ public class PlacesPlugin extends JavaPlugin {
 	Place p = new Place();
 	p.setName(n);
 	p.setSpot(l);
+	p.setEntrance(l);
+	p.setGraveyard(l);
 	p.setHome(home);
 
 	Map<String,Map<String,Place>> storage = null;
@@ -169,6 +205,16 @@ public class PlacesPlugin extends JavaPlugin {
 	ps.put(n, p);
 
 	getDatabase().save(p);
+	return p;
+    }
+
+
+
+    private Place clonePlace(String name, Place original, boolean home) {
+	Place p = createPlace(name, original.getSpot(), home);
+	p.setEntrance(original.getEntrance());
+	p.setGraveyard(original.getGraveyard());
+	updatePlace(p);
 	return p;
     }
 
@@ -228,7 +274,7 @@ public class PlacesPlugin extends JavaPlugin {
 		return true;
 	    }
 	};
-
+	
 
 	new PermissionCommand(this, "visit") {
 	    public boolean run(Player p, String n) {
@@ -246,13 +292,47 @@ public class PlacesPlugin extends JavaPlugin {
 	};
 
 
+	new PermissionCommand(this, "visit-place") {
+	    public boolean run(Player p, String name) {
+		Place place = getPlace(p, name);
+		if(place == null) {
+		    msg(p, "No such place:" + name);
+
+		} else {
+		    saveReturn(p);
+		    teleportQueue.safeTeleport(p, place.getEntrance());
+		}
+
+		return true;
+	    }
+
+	    public boolean run(Player p, String world, String name) {
+		Place place = getPlace(world, name);
+		if(place == null) {
+		    msg(p, "No such place in \"" + world + "\": " + name);
+
+		} else {
+		    saveReturn(p);
+		    teleportQueue.safeTeleport(p, place.getEntrance());
+		}
+
+		return true;
+	    }
+	};
+
+
 	new PermissionCommand(this, "graveyard") {
 	    public boolean run(Player p) {
 		Nearness near = getNearest(p);
-		Place place = near.getPlace();
 
-		saveReturn(p);
-		teleportQueue.safeTeleport(p, place.getGraveyard());
+		if(near == null) {
+		    msg(p, "No nearby graveyards.");
+
+		} else {
+		    Place place = near.getPlace();
+		    saveReturn(p);
+		    teleportQueue.safeTeleport(p, place.getGraveyard());
+		}
 
 		return true;
 	    }
@@ -278,13 +358,39 @@ public class PlacesPlugin extends JavaPlugin {
 
 	new PermissionCommand(this, "spawn") {
 	    public boolean run(Player p) {
+		Place place = getPlace(p, SPAWN_NAME);
+
+		if(place == null) {
+		    msg(p, "The spawn point has not been set for this world.");
+		    
+		} else {
+		    Location l = place.getEntrance();
+		    if(l == null) l = place.getSpot();
+
+		    saveReturn(p);
+		    teleportQueue.safeTeleport(p, l);
+		}
+
 		return true;
 	    }
 	};
 
-
+	
 	new PermissionCommand(this, "set-spawn") {
-	    public boolean run(Player p, String n) {
+	    public boolean run(Player p) {
+		Place place = getPlace(p, SPAWN_NAME);
+		Location l = p.getLocation();
+
+		if(place == null) {
+		    place = createPlace(SPAWN_NAME, l);
+
+		} else {
+		    place.setWeight(0);
+		    place.setSpot(l);
+		    place.setEntrance(l);
+		    place.setGraveyard(l);
+		}
+
 		return true;
 	    }
 	};
@@ -296,7 +402,7 @@ public class PlacesPlugin extends JavaPlugin {
 	    }
 
 	    public boolean run(Player p, String n, String weight) {
-		Place place = getPlace(p.getWorld().getName(), n);
+		Place place = getPlace(p, n);
 		if(place != null) {
 		    msg(p, "A place with this name already exists: " + n);
 		    return true;
@@ -324,7 +430,7 @@ public class PlacesPlugin extends JavaPlugin {
 
 	new PermissionCommand(this, "set-place-weight") {
 	    public boolean run(Player p, String n, String weight) {
-		Place place = getPlace(p.getWorld().getName(), n);
+		Place place = getPlace(p, n);
 		if(place == null) {
 		    msg(p, "No such place: " + n);
 		    return true;
@@ -349,7 +455,7 @@ public class PlacesPlugin extends JavaPlugin {
 
 	new PermissionCommand(this, "set-place") {
 	    public boolean run(Player p, String n) {
-		Place place = getPlace(p.getWorld().getName(), n);
+		Place place = getPlace(p, n);
 		if(place == null) {
 		    msg(p, "No such place: " + n);
 		    return true;
@@ -363,7 +469,7 @@ public class PlacesPlugin extends JavaPlugin {
 	    }
 
 	    public boolean run(Player p, String n, String weight) {
-		Place place = getPlace(p.getWorld().getName(), n);
+		Place place = getPlace(p, n);
 		if(place == null) {
 		    msg(p, "No such place: " + n);
 		    return true;
@@ -389,7 +495,7 @@ public class PlacesPlugin extends JavaPlugin {
 	
 	new PermissionCommand(this, "set-place-entrance") {
 	    public boolean run(Player p, String n) {
-		Place place = getPlace(p.getWorld().getName(), n);
+		Place place = getPlace(p, n);
 		if(place == null) {
 		    msg(p, "No such place: " + n);
 		    return true;
@@ -429,10 +535,15 @@ public class PlacesPlugin extends JavaPlugin {
 		}
 
 		Nearness near = getNearest(friend.getLocation());
-		Direction dir = getDirection(p, near);
-		Place place = near.place;
+		if(near == null) {
+		    msg(p, friend.getName() + " is near no places.");		    
 
-		msg(p, friend.getName() + " is " + dir.getDisplay() + " " + place.getName());
+		} else {
+		    Direction dir = getDirection(p, near);
+		    Place place = near.place;
+
+		    msg(p, friend.getName() + " is " + dir.getDisplay() + " " + place.getName());
+		}
 
 		return true;
 	    }
@@ -442,10 +553,16 @@ public class PlacesPlugin extends JavaPlugin {
 	new PermissionCommand(this, "whereami") {
 	    public boolean run(Player p) {
 		Nearness near = getNearest(p);
-		Direction dir = getDirection(p, near);
-		Place place = near.getPlace();
 
-		msg(p, "You are " + dir.getDisplay() + " " + place.getName());
+		if(near == null) {
+		    msg(p, "There are no nearby places.");
+		    
+		} else {
+		    Direction dir = getDirection(p, near);
+		    Place place = near.getPlace();
+		    
+		    msg(p, "You are " + dir.getDisplay() + " " + place.getName());
+		}
 
 		return true;
 	    }
@@ -475,7 +592,44 @@ public class PlacesPlugin extends JavaPlugin {
 		return true;
 	    }
 	};
+	
+    }
+    
 
+
+    private void onPlayerJoin(PlayerJoinEvent pje) {
+	Player player = pje.getPlayer();
+	Place home = getHome(player);
+
+	// we're just trying to catch new players to give them a home
+	// and put them in the correct place
+	if(home != null) return;
+
+	Place spawn = getPlace(player, SPAWN_NAME);
+	if(spawn != null) {
+	    home = clonePlace(player.getName(), spawn, true);
+	    teleportQueue.safeTeleport(player, home.getEntrance());
+
+	} else {
+	    getServer().getLogger().info("player " + player.getName() + " did not receive a home:"
+					 + " no spawn exists.");
+	}
+    }
+
+    
+    
+    private void onPlayerRespawn(PlayerRespawnEvent pre) {
+	// look for the nearest place to player
+	// find graveyard and send them there
+
+	Player player = pre.getPlayer();
+	Location deathpoint = player.getLocation();
+	Nearness near = getNearest(deathpoint);
+
+	if(near != null) {
+	    Place place = near.getPlace();
+	    pre.setRespawnLocation(place.getGraveyard());
+	}
     }
 
 
@@ -669,10 +823,17 @@ public class PlacesPlugin extends JavaPlugin {
     /* Direction is A relative to B, thus "A is NORTHWEST of B" */
     private Direction getFlatDirection(Location a, Location b) {
 	int xd, zd;
-	xd = a.getBlockX() - b.getBlockX();
-	zd = a.getBlockZ() - b.getBlockZ();
+	xd = b.getBlockX() - a.getBlockX();
+	zd = b.getBlockZ() - a.getBlockZ();
 
 	double deg = Math.atan2(xd, zd);
+	deg = Math.toDegrees(deg);
+
+	// TODO: now that we've got it working, we can cut out the
+	// degree conversion and do the logic on the radian values.
+
+	if(deg < 0) deg += 360.0;
+
 	if(deg < 22.5) {
 	    return Direction.EAST;
 	} else if(deg < 67.5) {
