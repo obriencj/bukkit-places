@@ -391,6 +391,9 @@ public class PlacesPlugin extends JavaPlugin {
 		    place.setGraveyard(l);
 		}
 
+		World w = l.getWorld();
+		w.setSpawnLocation(l.getBlockX(), l.getBlockY(), l.getBlockZ());
+
 		return true;
 	    }
 	};
