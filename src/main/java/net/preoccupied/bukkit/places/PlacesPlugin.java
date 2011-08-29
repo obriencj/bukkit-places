@@ -546,7 +546,10 @@ public class PlacesPlugin extends JavaPlugin {
 		    Direction dir = getDirection(p, near);
 		    Place place = near.place;
 
-		    msg(p, friend.getName() + " is " + dir.getDisplay() + " " + place.getName());
+		    String t = place.getTitle();
+		    if(t == null) t = place.getName();
+
+		    msg(p, friend.getName() + " is " + dir.getDisplay() + " " + t + ".");
 		}
 
 		return true;
@@ -564,8 +567,11 @@ public class PlacesPlugin extends JavaPlugin {
 		} else {
 		    Direction dir = getDirection(p, near);
 		    Place place = near.getPlace();
+
+		    String t = place.getTitle();
+		    if(t == null) t = place.getName();
 		    
-		    msg(p, "You are " + dir.getDisplay() + " " + place.getName());
+		    msg(p, "You are " + dir.getDisplay() + " " + t + ".");
 		}
 
 		return true;
