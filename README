@@ -102,3 +102,6 @@ I'd like to add a /nearby command to list the three or four closest
 places and the direction they are in. I'd also like to consider ways
 to integrate in-game beds, but am not sure if it's worthwhile or even
 what the appropriate feature would do. It needs more thinking!
+
+I need to add some fuzzy search and naming, and a way to list the
+places for a world in a usable way.

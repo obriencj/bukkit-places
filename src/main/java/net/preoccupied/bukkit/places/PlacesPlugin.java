@@ -198,7 +198,7 @@ public class PlacesPlugin extends JavaPlugin {
 	p.setName(n);
 	p.setSpot(l);
 	p.setEntrance(l);
-	p.setGraveyard(l);
+	//p.setGraveyard(l);
 	p.setHome(home);
 
 	Map<String,Map<String,Place>> storage = null;
@@ -404,7 +404,7 @@ public class PlacesPlugin extends JavaPlugin {
 		    place.setWeight(0);
 		    place.setSpot(l);
 		    place.setEntrance(l);
-		    // place.setGraveyard(l);
+		    place.setGraveyard(l);
 		}
 
 		World w = l.getWorld();
@@ -560,6 +560,22 @@ public class PlacesPlugin extends JavaPlugin {
 		place.setGraveyard(p.getLocation());
 		updatePlace(place);
 		msg(p, "Place '" + n + "' graveyard updated to current location.");
+		return true;
+	    }
+	};
+
+
+	new PermissionCommand(this, "clear-place-graveyard") {
+	    public boolean run(Player p, String n) {
+		Place place = getPlace(p, n);
+		if(place == null) {
+		    msg(p, "No such place: " + n);
+		    return true;
+		}
+
+		place.setGraveyard(null);
+		updatePlace(place);
+		msg(p, "Place '" + n + "' graveyard cleared.");
 		return true;
 	    }
 	};
