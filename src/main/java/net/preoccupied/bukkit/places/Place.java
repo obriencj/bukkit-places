@@ -82,6 +82,12 @@ public class Place {
     }
 
 
+    /** The title if set, otherwise the name */
+    public String getDisplay() {
+	return (this.title == null)? this.name: this.title;
+    }
+
+
     public void setHome(boolean ishome) {
 	this.home = ishome;
     }

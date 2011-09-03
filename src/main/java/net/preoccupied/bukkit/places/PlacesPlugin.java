@@ -41,6 +41,18 @@ public class PlacesPlugin extends JavaPlugin {
 
 
 
+    private void log(Object... args) {
+	StringBuilder sb = new StringBuilder();
+	for(Object o : args) {
+	    sb.append((o == null)? "[null]": o.toString());
+	    sb.append(" ");
+	}
+
+	getServer().getLogger().info(sb.toString());
+    }
+
+
+
     public void onEnable() {
 	placesByName = new HashMap<String,Map<String,Place>>();
 	homesByOwner = new HashMap<String,Map<String,Place>>();
@@ -71,7 +83,7 @@ public class PlacesPlugin extends JavaPlugin {
 
 	setupCommands();
 
-	getServer().getLogger().info(this + " is enabled");
+	log(this, "is enabled");
     }
 
 
@@ -82,7 +94,7 @@ public class PlacesPlugin extends JavaPlugin {
 	returnLocations.clear();
 	teleportQueue.disable();
 
-	getServer().getLogger().info(this + " is disabled");
+	log(this, "is disabled");
     }
 
 
@@ -247,11 +259,12 @@ public class PlacesPlugin extends JavaPlugin {
 	    public boolean run(Player p) {
 		Place home = getHome(p);
 		if(home == null) {
-		    msg(p, "You've not set your home. You may do so via /set-home");
+		    msg(p, "You've not set your home. You may do so via the /set-home command.");
 
 		} else {
 		    saveReturn(p);
 		    teleportQueue.safeTeleport(p, home.getSpot());
+		    msg(p, "Teleporting home");
 		}
 
 		return true;
@@ -269,7 +282,7 @@ public class PlacesPlugin extends JavaPlugin {
 		    updatePlace(home);
 		}
 
-		msg(p, "Home location has been saved");
+		msg(p, "Home location has been saved.");
 
 		return true;
 	    }
@@ -280,12 +293,14 @@ public class PlacesPlugin extends JavaPlugin {
 	    public boolean run(Player p, String n) {
 		Player friend = getServer().getPlayer(n);
 		if(friend == null) {
-		    msg(p, "Player not found: " + n);
+		    msg(p, "Player not found: " + n + ".");
 		    return true;
 		}
 
 		saveReturn(p);
 		teleportQueue.safeTeleport(p, friend.getLocation());
+		msg(p, "Teleporting to " + n + ".");
+		msg(friend, p.getName() + " is incoming.");
 
 		return true;
 	    }
@@ -301,6 +316,7 @@ public class PlacesPlugin extends JavaPlugin {
 		} else {
 		    saveReturn(p);
 		    teleportQueue.safeTeleport(p, place.getEntrance());
+		    msg(p, "Teleporting to the entrance of " + place.getDisplay());
 		}
 
 		return true;
@@ -388,7 +404,7 @@ public class PlacesPlugin extends JavaPlugin {
 		    place.setWeight(0);
 		    place.setSpot(l);
 		    place.setEntrance(l);
-		    place.setGraveyard(l);
+		    // place.setGraveyard(l);
 		}
 
 		World w = l.getWorld();
@@ -426,7 +442,26 @@ public class PlacesPlugin extends JavaPlugin {
 
 	new PermissionCommand(this, "remove-place") {
 	    public boolean run(Player p, String n) {
-		err(p, "unimplemented");
+		Place place = getPlace(p, n);
+		if(place == null) {
+		    msg(p, "No such place: " + n);
+		    return true;
+		}
+		return run(p, place);
+	    }
+
+	    public boolean run(Player p, String w, String n) {
+		Place place = getPlace(w, n);
+		if(place == null) {
+		    msg(p, "No such place on " + w + ": " + n);
+		    return true;
+		}
+		return run(p, place);
+	    }
+
+	    public boolean run(Player p, Place place) {
+		msg(p, "Deleting place #" + place.getId());
+		deletePlace(place);
 		return true;
 	    }
 	};
@@ -516,7 +551,7 @@ public class PlacesPlugin extends JavaPlugin {
 
 	new PermissionCommand(this, "set-place-graveyard") {
 	    public boolean run(Player p, String n) {
-		Place place = getPlace(p.getWorld().getName(), n);
+		Place place = getPlace(p, n);
 		if(place == null) {
 		    msg(p, "No such place: " + n);
 		    return true;
@@ -525,6 +560,70 @@ public class PlacesPlugin extends JavaPlugin {
 		place.setGraveyard(p.getLocation());
 		updatePlace(place);
 		msg(p, "Place '" + n + "' graveyard updated to current location.");
+		return true;
+	    }
+	};
+
+
+	new PermissionCommand(this, "set-place-title") {
+	    public boolean run(Player p, String n) {
+		return run(p, n, null);
+	    }
+
+
+	    public boolean run(Player p, String n, String title) {
+		Place place = getPlace(p, n);
+		if(place == null) {
+		    msg(p, "No such place: " + n);
+		    return true;
+		}
+
+		if(title != null && title.length() == 0)
+		    title = null;
+
+		place.setTitle(title);
+		updatePlace(place);
+		
+		if(title == null) {
+		    msg(p, "Place '" + n + "' title cleared.");
+		} else {
+		    msg(p, "Place '" + n + "' title set to: " + title);
+		}
+
+		return true;
+	    }
+	};
+
+
+	new PermissionCommand(this, "place-info") {
+	    public boolean run(Player p, String n) {
+		Place place = getPlace(p, n);
+		if(place == null) {
+		    msg(p, "No such place: " + n);
+		    return true;
+		}
+
+		return run(p, place);
+	    }
+
+	    public boolean run(Player p, String w, String n) {
+		Place place = getPlace(w, n);
+		if(place == null) {
+		    msg(p, "No such place on " + w + ": " + n);
+		    return true;
+		}
+
+		return run(p, place);
+	    }
+
+	    public boolean run(Player p, Place place) {
+		msg(p, "Information for place: " + place.getId());
+		msg(p, "  Name: " + safestr(place.getName()));
+		msg(p, "  Title: " + safestr(place.getTitle()));
+		msg(p, "  Weight: " + safestr(place.getWeight()));
+		msg(p, "  Center: " + safestr(place.getSpot()));
+		msg(p, "  Entrance: " + safestr(place.getEntrance()));
+		msg(p, "  Graveyard: " + safestr(place.getGraveyard()));
 		return true;
 	    }
 	};
@@ -545,11 +644,8 @@ public class PlacesPlugin extends JavaPlugin {
 		} else {
 		    Direction dir = getDirection(p, near);
 		    Place place = near.place;
-
-		    String t = place.getTitle();
-		    if(t == null) t = place.getName();
-
-		    msg(p, friend.getName() + " is " + dir.getDisplay() + " " + t + ".");
+		    msg(p, friend.getName() + " is " + dir.getDisplay()
+			+ " " + place.getDisplay() + ".");
 		}
 
 		return true;
@@ -567,11 +663,9 @@ public class PlacesPlugin extends JavaPlugin {
 		} else {
 		    Direction dir = getDirection(p, near);
 		    Place place = near.getPlace();
-
-		    String t = place.getTitle();
-		    if(t == null) t = place.getName();
 		    
-		    msg(p, "You are " + dir.getDisplay() + " " + t + ".");
+		    msg(p, "You are " + dir.getDisplay()
+			+ " " + place.getDisplay() + ".");
 		}
 
 		return true;
@@ -625,8 +719,8 @@ public class PlacesPlugin extends JavaPlugin {
 	    teleportQueue.safeTeleport(player, home.getEntrance());
 
 	} else {
-	    getServer().getLogger().info("player " + player.getName() + " did not receive a home:"
-					 + " no spawn exists.");
+	    log("player", player.getName(), "did not receive a home:",
+		"no spawn has been defined");
 	}
     }
 
@@ -638,11 +732,14 @@ public class PlacesPlugin extends JavaPlugin {
 
 	Player player = pre.getPlayer();
 	Location deathpoint = player.getLocation();
-	Nearness near = getNearest(deathpoint);
+	Nearness near = getNearestGraveyard(deathpoint);
 
 	if(near != null) {
 	    Place place = near.getPlace();
 	    pre.setRespawnLocation(place.getGraveyard());
+
+	    log("respawning", player.getName(), "at graveyard for place:",
+		place.getName());
 	}
     }
 
@@ -710,6 +807,18 @@ public class PlacesPlugin extends JavaPlugin {
 
 
     private Nearness getNearest(Location l) {
+	return getNearest(l, false);
+    }
+
+
+
+    private Nearness getNearestGraveyard(Location l) {
+	return getNearest(l, true);
+    }
+
+
+
+    private Nearness getNearest(Location l, boolean require_graveyard) {
 	Place ret = null;
 	int distance = 0;
 
@@ -718,6 +827,10 @@ public class PlacesPlugin extends JavaPlugin {
 	if(places == null) return null;
 
 	for(Place place : places.values()) {
+	    if(require_graveyard && (place.getGraveyard() == null)) {
+		continue;
+	    }
+
 	    if(ret == null) {
 		ret = place;
 		distance = getWeightedDistance(l, place);

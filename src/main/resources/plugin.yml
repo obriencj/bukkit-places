@@ -3,7 +3,7 @@ main: net.preoccupied.bukkit.places.PlacesPlugin
 version: 0.1
 author: obriencj@gmail.com
 database: true
-description: 
+description: Location-based graveyards, world-specific homes and spawns, and place naming.
 
 commands:
   home:
@@ -14,6 +14,7 @@ commands:
   set-home:
     description:
     usage: /set-home
+    aliases: [sethome, ]
     permission: preoccupied.places.home
 
   visit:
@@ -44,39 +45,56 @@ commands:
 
   set-spawn:
     description: Set the world spawn
-    usage: /set-spawn [PLACE_NAME]
+    usage: /set-spawn
+    aliases: [setspawn, ]
     permission: preoccupied.places.setspawn
     
   add-place:
-    description:
+    description: Creates a new place and optionally sets its weight
     usage: /add-place PLACE_NAME [WEIGHT]
     permission: preoccupied.places.edit
 
   remove-place:
-    description:
+    description: Removes a place
     usage: /remove-place PLACE_NAME
     permission: preoccupied.places.edit
 
   set-place-weight:
-    description:
+    description: Sets the weight for a place
     usage: /set-place-weight PLACE_NAME WEIGHT
     permission: preoccupied.places.edit
 
   set-place:
-    description:
+    description: Sets the center and optionally the weight for a place
     usage: /set-place PLACE_NAME [WEIGHT]
     permission: preoccupied.places.edit
 
   set-place-entrance:
-    description:
-    usage: /set-place-entrance [PLACE_NAME]
+    description: Sets the entrance for a place
+    usage: /set-place-entrance PLACE_NAME
     permission: preoccupied.places.edit
     
   set-place-graveyard:
-    description:
-    usage: /set-place-graveyard [PLACE_NAME]
+    description: Sets the graveyard for a place
+    usage: /set-place-graveyard PLACE_NAME
     permission: preoccupied.places.edit
 
+  clear-place-graveyard:
+    description: Removes the graveyard from a place
+    usage: /clear-place-graveyard PLACE_NAME
+    aliases: [unset-place-graveyard, ]
+    permission: preoccupied.places.edit
+    
+  set-place-title:
+    description: Sets or clears the title for a place
+    usage: /set-place-title PLACE_NAME [TITLE]
+    permission: preoccupied.places.edit
+
+  place-info:
+    description: Prints information about a place
+    usage: /place-info [WORLD] PLACE_NAME
+    permission: preoccupied.places.info
+    
   whereis:
     description:
     usage: /whereis PLAYER_NAME
@@ -91,14 +109,14 @@ commands:
     description:
     usage: /nearby
     permission: preoccupied.places.nearby
-    
+
   jail:
-    description:
+    description: Sends a player to Jail
     usage: /jail PLAYER_NAME [MINUTES]
     permission: preoccupied.places.jail
 
   unjail:
-    description:
+    description: Releases a player from Jail
     usage: /unjail PLAYER_NAME
     permission: preoccupied.places.jail
 
@@ -118,6 +136,7 @@ permissions:
       preoccupied.places.bring: true
       preoccupied.places.setspawn: true
       preoccupied.places.edit: true
+      preoccupied.places.info: true
       preoccupied.places.whereis: true
       preoccupied.places.whereami: true
       preoccupied.places.nearby: true
@@ -134,6 +153,7 @@ permissions:
       preoccupied.places.spawn: true
       preoccupied.places.return: true
       preoccupied.places.edit: true
+      preoccupied.places.info: true
       preoccupied.places.whereami: true
       preoccupied.places.nearby: true
 
@@ -170,6 +190,9 @@ permissions:
   preoccupied.places.edit:
     default: false
 
+  preoccupied.places.info:
+    default: false
+    
   preoccupied.places.whereis:
     default: false
 
