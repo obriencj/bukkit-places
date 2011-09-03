@@ -724,11 +724,26 @@ public class PlacesPlugin extends JavaPlugin {
 
 	    } else {
 		int d = getWeightedDistance(l, place);
-		
-		// if place is closer than ret, or we're inside of
-		// place and place is smaller than ret, then place is
-		// our new closest.
-		if((d < distance) || ((d <= 0) && place.getWeight() < ret.getWeight())) {
+
+		if(distance <= 0) {
+		    // if we're already "inside" of a place
+
+		    if(d <= 0) {
+			// then we only want to consider the new place
+			// if we're inside it, too
+
+			if(place.getWeight() < ret.getWeight()) {
+			    // this place is nearer if it's smaller
+			    // than the previous
+			    distance = d;
+			    ret = place;
+			}
+		    }
+
+		} else if(d < distance) {
+		    // we aren't already inside of a place, and the
+		    // new place is closer.
+
 		    distance = d;
 		    ret = place;
 		}
