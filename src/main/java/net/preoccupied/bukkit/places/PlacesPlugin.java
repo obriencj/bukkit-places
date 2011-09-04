@@ -639,7 +639,7 @@ public class PlacesPlugin extends JavaPlugin {
 
 
 
-	new PermissionCommand(this, "list-place") {
+	new PermissionCommand(this, "list-places") {
 	    public boolean run(Player p) {
 		World world = p.getWorld();
 		Map<String,Place> places = placesByName.get(world.getName());
