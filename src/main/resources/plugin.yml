@@ -90,6 +90,12 @@ commands:
     usage: /set-place-title PLACE_NAME [TITLE]
     permission: preoccupied.places.edit
 
+  list-places:
+    description: Prints the list of places on a world
+    usage: /list-places [WORLD] PATTERN
+    aliases: [find-place, ]
+    permission: preoccupied.places.info
+    
   place-info:
     description: Prints information about a place
     usage: /place-info [WORLD] PLACE_NAME

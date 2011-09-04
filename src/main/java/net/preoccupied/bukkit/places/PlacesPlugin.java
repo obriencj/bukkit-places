@@ -254,6 +254,33 @@ public class PlacesPlugin extends JavaPlugin {
 
 
 
+    private static final String globconvert(String pattern) {
+	pattern = pattern.replace("\\","\\\\");
+	pattern = pattern.replace(".", "\\.");
+	pattern = pattern.replace("?", ".");
+	pattern = pattern.replace("*", ".*");
+	return pattern;
+    }
+
+
+
+    private static final String safestr(Object o) {
+	return (o == null)? "[null]": o.toString();
+    }
+
+
+    
+    private static final String strjoin(Object... args) {
+	StringBuilder sb = new StringBuilder();
+	for(Object o : args) {
+	    sb.append(safestr(o));
+	    sb.append(" ");
+	}
+	return sb.toString();
+    }
+
+
+
     public void setupCommands() {
 	new PermissionCommand(this, "home") {
 	    public boolean run(Player p) {
@@ -609,6 +636,51 @@ public class PlacesPlugin extends JavaPlugin {
 		return true;
 	    }
 	};
+
+
+
+	new PermissionCommand(this, "list-place") {
+	    public boolean run(Player p) {
+		World world = p.getWorld();
+		Map<String,Place> places = placesByName.get(world.getName());
+
+		if(places == null) {
+		    msg(p, "No places on this world.");
+		    return true;
+		}
+
+		msg(p, "Places:");
+		for(Place place : places.values()) {
+		    msg(p, strjoin("   #" + place.getId(), place.getName(), place.getTitle()));
+		}
+
+		return true;
+	    }	    
+
+	    public boolean run(Player p, String n) {
+		return run(p, p.getWorld().getName(), n);
+	    }
+
+	    public boolean run(Player p, String w, String n) {
+		Map<String,Place> places = placesByName.get(w);
+		
+		if(places == null) {
+		    msg(p, "No places on this world.");
+		    return true;
+		}
+
+		msg(p, "Places matching " + n);
+		n = globconvert(n);
+
+		for(Place place : places.values()) {
+		    if(place.getDisplay().matches(n) || ("#"+place.getId()).matches(n)) {
+			msg(p, strjoin("   #" + place.getId(), place.getName(), place.getTitle()));
+		    }
+		}
+		return true;
+	    }
+	};
+
 
 
 	new PermissionCommand(this, "place-info") {
