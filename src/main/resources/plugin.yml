@@ -62,6 +62,7 @@ commands:
   set-place-weight:
     description: Sets the weight for a place
     usage: /set-place-weight PLACE_NAME WEIGHT
+    aliases: [set-place-radius, ]
     permission: preoccupied.places.edit
 
   set-place:
@@ -77,12 +78,13 @@ commands:
   set-place-graveyard:
     description: Sets the graveyard for a place
     usage: /set-place-graveyard PLACE_NAME
+    aliases: [set-place-gy, ]
     permission: preoccupied.places.edit
 
   clear-place-graveyard:
     description: Removes the graveyard from a place
     usage: /clear-place-graveyard PLACE_NAME
-    aliases: [unset-place-graveyard, ]
+    aliases: [unset-place-graveyard, unset-place-gy, ]
     permission: preoccupied.places.edit
     
   set-place-title:

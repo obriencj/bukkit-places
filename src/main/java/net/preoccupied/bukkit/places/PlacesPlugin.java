@@ -19,8 +19,8 @@ import org.bukkit.plugin.EventExecutor;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import net.preoccupied.bukkit.PlayerCommand;
 import net.preoccupied.bukkit.TeleportQueue;
-import net.preoccupied.bukkit.permissions.PermissionCommand;
 
 
 
@@ -264,25 +264,8 @@ public class PlacesPlugin extends JavaPlugin {
 
 
 
-    private static final String safestr(Object o) {
-	return (o == null)? "[null]": o.toString();
-    }
-
-
-    
-    private static final String strjoin(Object... args) {
-	StringBuilder sb = new StringBuilder();
-	for(Object o : args) {
-	    sb.append(safestr(o));
-	    sb.append(" ");
-	}
-	return sb.toString();
-    }
-
-
-
     public void setupCommands() {
-	new PermissionCommand(this, "home") {
+	new PlayerCommand(this, "home") {
 	    public boolean run(Player p) {
 		Place home = getHome(p);
 		if(home == null) {
@@ -299,7 +282,7 @@ public class PlacesPlugin extends JavaPlugin {
 	};
 
 
-	new PermissionCommand(this, "set-home") {
+	new PlayerCommand(this, "set-home") {
 	    public boolean run(Player p) {
 		Place home = getHome(p);
 		if(home == null) {
@@ -310,13 +293,14 @@ public class PlacesPlugin extends JavaPlugin {
 		}
 
 		msg(p, "Home location has been saved.");
+		log(p.getName(), "set home on", home.getWorld(), "to", home.getSpot());
 
 		return true;
 	    }
 	};
 	
 
-	new PermissionCommand(this, "visit") {
+	new PlayerCommand(this, "visit") {
 	    public boolean run(Player p, String n) {
 		Player friend = getServer().getPlayer(n);
 		if(friend == null) {
@@ -334,7 +318,7 @@ public class PlacesPlugin extends JavaPlugin {
 	};
 
 
-	new PermissionCommand(this, "visit-place") {
+	new PlayerCommand(this, "visit-place") {
 	    public boolean run(Player p, String name) {
 		Place place = getPlace(p, name);
 		if(place == null) {
@@ -364,7 +348,7 @@ public class PlacesPlugin extends JavaPlugin {
 	};
 
 
-	new PermissionCommand(this, "graveyard") {
+	new PlayerCommand(this, "graveyard") {
 	    public boolean run(Player p) {
 		Nearness near = getNearest(p);
 
@@ -382,7 +366,7 @@ public class PlacesPlugin extends JavaPlugin {
 	};
 
 
-	new PermissionCommand(this, "return") {
+	new PlayerCommand(this, "return") {
 	    public boolean run(Player p) {
 		Location r = getReturn(p);
 
@@ -399,7 +383,7 @@ public class PlacesPlugin extends JavaPlugin {
 	};
 
 
-	new PermissionCommand(this, "spawn") {
+	new PlayerCommand(this, "spawn") {
 	    public boolean run(Player p) {
 		Place place = getPlace(p, SPAWN_NAME);
 
@@ -419,13 +403,14 @@ public class PlacesPlugin extends JavaPlugin {
 	};
 
 	
-	new PermissionCommand(this, "set-spawn") {
+	new PlayerCommand(this, "set-spawn") {
 	    public boolean run(Player p) {
 		Place place = getPlace(p, SPAWN_NAME);
 		Location l = p.getLocation();
 
 		if(place == null) {
 		    place = createPlace(SPAWN_NAME, l);
+		    info("created spawn place for world", place.getWorld());
 
 		} else {
 		    place.setWeight(0);
@@ -436,13 +421,16 @@ public class PlacesPlugin extends JavaPlugin {
 
 		World w = l.getWorld();
 		w.setSpawnLocation(l.getBlockX(), l.getBlockY(), l.getBlockZ());
+		
+		msg(p, "Spawn point has been set");
+		info(p.getName(), "set spawn location on", place.getWorld(), "to", l);
 
 		return true;
 	    }
 	};
 
 
-	new PermissionCommand(this, "add-place") {
+	new PlayerCommand(this, "add-place") {
 	    public boolean run(Player p, String n) {
 		return run(p, n, "0");
 	    }
@@ -456,18 +444,20 @@ public class PlacesPlugin extends JavaPlugin {
 		
 		int w = parseInt(p, weight, 0);
 
-		place = createPlace(n, p.getLocation());
+		Location l = p.getLocation();
+		place = createPlace(n, l);
 		place.setWeight(w);
 		updatePlace(place);
 
 		msg(p, "Created new place: " + n);
-		
+		info(p.getName(), "created place named", n, "at", l, "with radius", w);
+
 		return true;
 	    }
 	};
 
 
-	new PermissionCommand(this, "remove-place") {
+	new PlayerCommand(this, "remove-place") {
 	    public boolean run(Player p, String n) {
 		Place place = getPlace(p, n);
 		if(place == null) {
@@ -487,14 +477,17 @@ public class PlacesPlugin extends JavaPlugin {
 	    }
 
 	    public boolean run(Player p, Place place) {
-		msg(p, "Deleting place #" + place.getId());
 		deletePlace(place);
+
+		msg(p, "Deleting place #" + place.getId());
+		info(p.getName(), "deleted place", place.getName(), "#"+place.getId());
+		
 		return true;
 	    }
 	};
 
 
-	new PermissionCommand(this, "set-place-weight") {
+	new PlayerCommand(this, "set-place-weight") {
 	    public boolean run(Player p, String n, String weight) {
 		Place place = getPlace(p, n);
 		if(place == null) {
@@ -512,14 +505,16 @@ public class PlacesPlugin extends JavaPlugin {
 
 		place.setWeight(w);
 		updatePlace(place);
+
 		msg(p, "Place '" + n + "' weight set to: " + w);
+		info(p.getName(), "updated place", n, "radius to", w);
 
 		return true;
 	    }
 	};
 
 
-	new PermissionCommand(this, "set-place") {
+	new PlayerCommand(this, "set-place") {
 	    public boolean run(Player p, String n) {
 		Place place = getPlace(p, n);
 		if(place == null) {
@@ -527,9 +522,12 @@ public class PlacesPlugin extends JavaPlugin {
 		    return true;
 		}
 
-		place.setSpot(p.getLocation());
+		Location l = p.getLocation();
+		place.setSpot(l);
 		updatePlace(place);
+
 		msg(p, "Place '" + n + "' updated to current location.");
+		info(p.getName(), "updated place", n, "center to", l);
 		
 		return true;
 	    }
@@ -549,17 +547,20 @@ public class PlacesPlugin extends JavaPlugin {
 		    return true;
 		}
 
-		place.setSpot(p.getLocation());
+		Location l = p.getLocation();
+		place.setSpot(l);
 		place.setWeight(w);
 		updatePlace(place);
+
 		msg(p, "Place '" + n + "' updated to current location with weight " + w);
+		info(p.getName(), "updated place", n, "center to", l, "with radius", w);
 
 		return true;
 	    }
 	};
 
 	
-	new PermissionCommand(this, "set-place-entrance") {
+	new PlayerCommand(this, "set-place-entrance") {
 	    public boolean run(Player p, String n) {
 		Place place = getPlace(p, n);
 		if(place == null) {
@@ -567,16 +568,19 @@ public class PlacesPlugin extends JavaPlugin {
 		    return true;
 		}
 
-		place.setEntrance(p.getLocation());
+		Location l = p.getLocation();
+		place.setEntrance(l);
 		updatePlace(place);
+
 		msg(p, "Place '" + n + "' entrance updated to current location.");
+		info(p.getName(), "set entrance for place", n, "to", l);
 
 		return true;
 	    }
 	};
 
 
-	new PermissionCommand(this, "set-place-graveyard") {
+	new PlayerCommand(this, "set-place-graveyard") {
 	    public boolean run(Player p, String n) {
 		Place place = getPlace(p, n);
 		if(place == null) {
@@ -584,15 +588,19 @@ public class PlacesPlugin extends JavaPlugin {
 		    return true;
 		}
 
-		place.setGraveyard(p.getLocation());
+		Location l = p.getLocation();
+		place.setGraveyard(l);
 		updatePlace(place);
+
 		msg(p, "Place '" + n + "' graveyard updated to current location.");
+		info(p.getName(), "set graveyard for place", n, "to", l);
+
 		return true;
 	    }
 	};
 
 
-	new PermissionCommand(this, "clear-place-graveyard") {
+	new PlayerCommand(this, "clear-place-graveyard") {
 	    public boolean run(Player p, String n) {
 		Place place = getPlace(p, n);
 		if(place == null) {
@@ -602,13 +610,16 @@ public class PlacesPlugin extends JavaPlugin {
 
 		place.setGraveyard(null);
 		updatePlace(place);
+
 		msg(p, "Place '" + n + "' graveyard cleared.");
+		info(p.getName(), "cleared graveyard from place", n);
+
 		return true;
 	    }
 	};
 
 
-	new PermissionCommand(this, "set-place-title") {
+	new PlayerCommand(this, "set-place-title") {
 	    public boolean run(Player p, String n) {
 		return run(p, n, null);
 	    }
@@ -633,13 +644,15 @@ public class PlacesPlugin extends JavaPlugin {
 		    msg(p, "Place '" + n + "' title set to: " + title);
 		}
 
+		info(p.getName(), "set Place", n, "title to", title);
+
 		return true;
 	    }
 	};
 
 
 
-	new PermissionCommand(this, "list-places") {
+	new PlayerCommand(this, "list-places") {
 	    public boolean run(Player p) {
 		World world = p.getWorld();
 		Map<String,Place> places = placesByName.get(world.getName());
@@ -651,7 +664,7 @@ public class PlacesPlugin extends JavaPlugin {
 
 		msg(p, "Places:");
 		for(Place place : places.values()) {
-		    msg(p, strjoin("   #" + place.getId(), place.getName(), place.getTitle()));
+		    msg(p, join(' ', "   #" + place.getId(), place.getName(), place.getTitle()));
 		}
 
 		return true;
@@ -674,7 +687,7 @@ public class PlacesPlugin extends JavaPlugin {
 
 		for(Place place : places.values()) {
 		    if(place.getDisplay().matches(n) || ("#"+place.getId()).matches(n)) {
-			msg(p, strjoin("   #" + place.getId(), place.getName(), place.getTitle()));
+			msg(p, join(' ', "   #" + place.getId(), place.getName(), place.getTitle()));
 		    }
 		}
 		return true;
@@ -682,8 +695,7 @@ public class PlacesPlugin extends JavaPlugin {
 	};
 
 
-
-	new PermissionCommand(this, "place-info") {
+	new PlayerCommand(this, "place-info") {
 	    public boolean run(Player p, String n) {
 		Place place = getPlace(p, n);
 		if(place == null) {
@@ -705,35 +717,35 @@ public class PlacesPlugin extends JavaPlugin {
 	    }
 
 	    public boolean run(Player p, Place place) {
-		msg(p, "Information for place: " + place.getId());
-		msg(p, "  Name: " + safestr(place.getName()));
-		msg(p, "  Title: " + safestr(place.getTitle()));
-		msg(p, "  Weight: " + safestr(place.getWeight()));
-		msg(p, "  Center: " + safestr(place.getSpot()));
-		msg(p, "  Entrance: " + safestr(place.getEntrance()));
-		msg(p, "  Graveyard: " + safestr(place.getGraveyard()));
+		msg(p, "Information for place:", place.getId());
+		msg(p, "  Name:", place.getName());
+		msg(p, "  Title:", place.getTitle());
+		msg(p, "  Weight:", place.getWeight());
+		msg(p, "  Center:", place.getSpot());
+		msg(p, "  Entrance:", place.getEntrance());
+		msg(p, "  Graveyard:", place.getGraveyard());
 		return true;
 	    }
 	};
 
 
-	new PermissionCommand(this, "whereis") {
+	new PlayerCommand(this, "whereis") {
 	    public boolean run(Player p, String n) {
 		Player friend = getServer().getPlayer(n);
 		if(friend == null) {
-		    msg(p, "Player not found: " + n);
+		    msg(p, "Player not found:", n);
 		    return true;
 		}
 
 		Nearness near = getNearest(friend.getLocation());
 		if(near == null) {
-		    msg(p, friend.getName() + " is near no places.");		    
+		    msg(p, friend.getName(), "is near no places.");		    
 
 		} else {
 		    Direction dir = getDirection(p, near);
 		    Place place = near.place;
-		    msg(p, friend.getName() + " is " + dir.getDisplay()
-			+ " " + place.getDisplay() + ".");
+		    msg(p, friend.getName(), "is", dir.getDisplay(),
+			place.getDisplay() + ".");
 		}
 
 		return true;
@@ -741,7 +753,7 @@ public class PlacesPlugin extends JavaPlugin {
 	};
 
 
-	new PermissionCommand(this, "whereami") {
+	new PlayerCommand(this, "whereami") {
 	    public boolean run(Player p) {
 		Nearness near = getNearest(p);
 
@@ -752,8 +764,7 @@ public class PlacesPlugin extends JavaPlugin {
 		    Direction dir = getDirection(p, near);
 		    Place place = near.getPlace();
 		    
-		    msg(p, "You are " + dir.getDisplay()
-			+ " " + place.getDisplay() + ".");
+		    msg(p, "You are", dir.getDisplay(), place.getDisplay() + ".");
 		}
 
 		return true;
@@ -761,7 +772,7 @@ public class PlacesPlugin extends JavaPlugin {
 	};
 
 
-	new PermissionCommand(this, "nearby") {
+	new PlayerCommand(this, "nearby") {
 	    public boolean run(Player p) {
 		err(p, "unimplemented");
 		return true;
@@ -769,7 +780,7 @@ public class PlacesPlugin extends JavaPlugin {
 	};
 
 
-	new PermissionCommand(this, "jail") {
+	new PlayerCommand(this, "jail") {
 	    public boolean run(Player p, String n) {
 		err(p, "unimplemented");
 		return true;
@@ -782,7 +793,7 @@ public class PlacesPlugin extends JavaPlugin {
 	};
 
 
-	new PermissionCommand(this, "unjail") {
+	new PlayerCommand(this, "unjail") {
 	    public boolean run(Player p, String n) {
 		err(p, "unimplemented");
 		return true;

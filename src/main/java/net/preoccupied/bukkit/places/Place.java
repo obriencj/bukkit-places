@@ -12,8 +12,6 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
-import net.preoccupied.bukkit.permissions.PermissionCheck;
-
 
 
 @Entity()
@@ -29,9 +27,6 @@ public class Place {
     private boolean home = false;
 
     private int weight = 0;
-
-    @Transient
-    private PermissionCheck permissionCheck = null;
     
     private String spot_w = null;
     private int spot_x = 0;
