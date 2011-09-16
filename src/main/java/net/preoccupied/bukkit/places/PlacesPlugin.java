@@ -15,6 +15,7 @@ import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.plugin.EventExecutor;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -80,6 +81,13 @@ public class PlacesPlugin extends JavaPlugin {
 		}
 	    };
 	pm.registerEvent(Event.Type.PLAYER_RESPAWN, null, ee, Priority.Low, this);
+
+	ee = new EventExecutor() {
+		public void execute(Listener ignored, Event e) {
+		    onPlayerTeleport((PlayerTeleportEvent) e);
+		}
+	    };
+	pm.registerEvent(Event.Type.PLAYER_TELEPORT, null, ee, Priority.Low, this);
 
 	setupCommands();
 
@@ -742,7 +750,7 @@ public class PlacesPlugin extends JavaPlugin {
 		    msg(p, friend.getName(), "is near no places.");		    
 
 		} else {
-		    Direction dir = getDirection(p, near);
+		    Direction dir = getDirection(friend, near);
 		    Place place = near.place;
 		    msg(p, friend.getName(), "is", dir.getDisplay(),
 			place.getDisplay() + ".");
@@ -839,6 +847,34 @@ public class PlacesPlugin extends JavaPlugin {
 
 	    log("respawning", player.getName(), "at graveyard for place:",
 		place.getName());
+	}
+    }
+
+
+
+    private void onPlayerTeleport(PlayerTeleportEvent pte) {
+	Location orig = pte.getFrom();
+	Location dest = pte.getTo();
+
+	if(orig.getWorld() == dest.getWorld())
+	    return;
+
+	Player player = pte.getPlayer();
+	String dw = dest.getWorld().getName();
+
+	Place home = getHome(dw, player.getName());
+
+	// we're just trying to catch non-new players who may have
+	// teleported onto a world where they do not have a home set
+	if(home != null) return;
+	
+	Place spawn = getPlace(dw, SPAWN_NAME);
+	if(spawn != null) {
+	    home = clonePlace(player.getName(), spawn, true);
+
+	} else {
+	    log("player", player.getName(), "entered a world with no spawn:",
+		dw);
 	}
     }
 
