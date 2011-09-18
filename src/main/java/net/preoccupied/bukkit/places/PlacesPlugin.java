@@ -416,6 +416,8 @@ public class PlacesPlugin extends JavaPlugin {
 		    invitations.remove(p.getName());
 		    teleportQueue.safeTeleport(p, l);
 		}
+
+		return true;
 	    }
 	};	
 
