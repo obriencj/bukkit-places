@@ -9,6 +9,7 @@ commands:
   home:
     description:
     usage: /home
+    aliases: [h, ]
     permission: preoccupied.places.home
 
   set-home:
@@ -20,6 +21,7 @@ commands:
   visit:
     description: Teleports to another player
     usage: /visit PLAYER_NAME
+    aliases: [v, ]
     permission: preoccupied.places.visit
 
   visit-place:
@@ -32,10 +34,22 @@ commands:
     usage: /graveyard
     aliases: [gy, ]
     permission: preoccupied.places.graveyard
+
+  invite:
+    description: Invites a player to teleport to your current location
+    usage: /invite PLAYER_NAME
+    aliases: [inv, ]
+    permission: preoccupied.places.invite
+
+  accept:
+    description: Accepts an invitation, teleporting to the invite location
+    usage: /accept
+    permission: preoccupied.places.accept
     
   return:
-    description: Undoes previous /visit, /visit-place, /home, /graveyard, or /spawn
+    description: Undoes previous /visit, /visit-place, /home, /graveyard, /accept, or /spawn
     usage: /return
+    aliases: [r, ]
     permission: preoccupied.places.return
 
   spawn:
@@ -140,6 +154,8 @@ permissions:
       preoccupied.places.visitplace: true
       preoccupied.places.graveyard: true
       preoccupied.places.spawn: true
+      preoccupied.places.invite: true
+      preoccupied.places.accept: true
       preoccupied.places.return: true
       preoccupied.places.bring: true
       preoccupied.places.setspawn: true
@@ -159,6 +175,8 @@ permissions:
       preoccupied.places.visitplace: true
       preoccupied.places.graveyard: true
       preoccupied.places.spawn: true
+      preoccupied.places.invite: true
+      preoccupied.places.accept: true
       preoccupied.places.return: true
       preoccupied.places.edit: true
       preoccupied.places.info: true
@@ -171,6 +189,7 @@ permissions:
     children:
       preoccupied.places.home: true
       preoccupied.places.spawn: true
+      preoccupied.places.accept: true
       preoccupied.places.return: true
       preoccupied.places.whereami: true
       
@@ -186,6 +205,12 @@ permissions:
   preoccupied.places.spawn:
     default: false
 
+  preoccupied.places.invite:
+    default: false
+
+  preoccupied.places.accept:
+    default: false
+    
   preoccupied.places.return:
     default: false
 

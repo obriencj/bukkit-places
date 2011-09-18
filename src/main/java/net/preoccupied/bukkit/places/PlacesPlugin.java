@@ -36,6 +36,7 @@ public class PlacesPlugin extends JavaPlugin {
     private Map<String,Map<String,Place>> placesByName = null;
     private Map<String,Map<String,Place>> homesByOwner = null;
 
+    private Map<String,Location> invitations = null;
     private Map<String,Location> returnLocations = null;
 
     private TeleportQueue teleportQueue = null;
@@ -58,6 +59,7 @@ public class PlacesPlugin extends JavaPlugin {
 	placesByName = new HashMap<String,Map<String,Place>>();
 	homesByOwner = new HashMap<String,Map<String,Place>>();
 
+	invitations = new HashMap<String,Location>();
 	returnLocations = new HashMap<String,Location>();
 
 	teleportQueue = new TeleportQueue(this);
@@ -99,6 +101,7 @@ public class PlacesPlugin extends JavaPlugin {
     public void onDisable() {
 	placesByName.clear();
 	homesByOwner.clear();
+	invitations.clear();
 	returnLocations.clear();
 	teleportQueue.disable();
 
@@ -312,7 +315,7 @@ public class PlacesPlugin extends JavaPlugin {
 	    public boolean run(Player p, String n) {
 		Player friend = getServer().getPlayer(n);
 		if(friend == null) {
-		    msg(p, "Player not found: " + n + ".");
+		    msg(p, "Player not found:", n);
 		    return true;
 		}
 
@@ -372,6 +375,49 @@ public class PlacesPlugin extends JavaPlugin {
 		return true;
 	    }
 	};
+
+
+	new PlayerCommand(this, "invite") {
+	    public boolean run(Player p, String f) {
+		Player friend = getServer().getPlayer(f);
+		if(friend == null) {
+		    msg(p, "Player not found:", f);
+		    return true;
+		}
+
+		if(friend == p) {
+		    err(p, "You cannot invite yourself.");
+		    return true;
+		}
+		
+		Location l = p.getLocation();
+		invitations.put(friend.getName(), l);
+
+		info("player", p.getName(), "invited", friend.getName(), "to", l);
+
+		msg(p, "You have invited", friend.getName(), "to your current location.");
+		msg(friend, "You have been invited to visit", p.getName() + ".",
+		    "You may /accept their invitation to be teleported.");
+		
+		return true;
+	    }
+	};
+
+
+	new PlayerCommand(this, "accept") {
+	    public boolean run(Player p) {
+		Location l = invitations.get(p.getName());
+
+		if(l == null) {
+		    msg(p, "You have no pending invitations.");
+
+		} else {
+		    saveReturn(p);
+		    invitations.remove(p.getName());
+		    teleportQueue.safeTeleport(p, l);
+		}
+	    }
+	};	
 
 
 	new PlayerCommand(this, "return") {
