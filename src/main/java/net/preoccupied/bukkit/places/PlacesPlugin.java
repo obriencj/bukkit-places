@@ -361,7 +361,7 @@ public class PlacesPlugin extends JavaPlugin {
 
 	new PlayerCommand(this, "graveyard") {
 	    public boolean run(Player p) {
-		Nearness near = getNearest(p);
+		Nearness near = getNearestGraveyard(p);
 
 		if(near == null) {
 		    msg(p, "No nearby graveyards.");
@@ -997,6 +997,12 @@ public class PlacesPlugin extends JavaPlugin {
 
     private Nearness getNearestGraveyard(Location l) {
 	return getNearest(l, true);
+    }
+
+
+
+    private Nearness getNearestGraveyard(Player player) {
+	return getNearest(player.getLocation(), true);
     }
 
 
