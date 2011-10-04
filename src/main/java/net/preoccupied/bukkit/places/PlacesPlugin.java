@@ -461,7 +461,7 @@ public class PlacesPlugin extends JavaPlugin {
 	};
 
 
-	new PlayerCommand(this, "ressurect") {
+	new PlayerCommand(this, "resurrect") {
 	    public boolean run(Player p) {
 		Location r = getDeath(p);
 

@@ -141,9 +141,9 @@ commands:
     usage: /unjail PLAYER_NAME
     permission: preoccupied.places.jail
 
-  ressurect:
+  resurrect:
     description: Return player (or yourself) to the location of their recent demise.
-    usage: /ressurect [PLAYER_NAME]
+    usage: /resurrect [PLAYER_NAME]
     aliases: [undie, rez]
     permission: preoccupied.places.ressurect
 
@@ -169,6 +169,7 @@ permissions:
       preoccupied.places.whereami: true
       preoccupied.places.nearby: true
       preoccupied.places.jail: true
+      preoccupied.places.resurrect: true
 
   preoccupied.places.advanced:
     description: Advanced users
@@ -185,7 +186,9 @@ permissions:
       preoccupied.places.edit: true
       preoccupied.places.info: true
       preoccupied.places.whereami: true
+      preoccupied.places.whereis: true
       preoccupied.places.nearby: true
+      preoccupied.places.resurrect: true
 
   preoccupied.places.member:
     description: Normal users
@@ -242,6 +245,9 @@ permissions:
   preoccupied.places.jail:
     default: false
 
+  preoccupied.places.ressurrect:
+    default: false
+    
     
 
 # The end.
