@@ -37,6 +37,7 @@ public class PlacesPlugin extends JavaPlugin {
     private Map<String,Map<String,Place>> homesByOwner = null;
 
     private Map<String,Location> invitations = null;
+    private Map<String,Location> deathLocations = null;
     private Map<String,Location> returnLocations = null;
 
     private TeleportQueue teleportQueue = null;
@@ -60,6 +61,7 @@ public class PlacesPlugin extends JavaPlugin {
 	homesByOwner = new HashMap<String,Map<String,Place>>();
 
 	invitations = new HashMap<String,Location>();
+	deathLocations = new HashMap<String,Location>();
 	returnLocations = new HashMap<String,Location>();
 
 	teleportQueue = new TeleportQueue(this);
@@ -102,6 +104,7 @@ public class PlacesPlugin extends JavaPlugin {
 	placesByName.clear();
 	homesByOwner.clear();
 	invitations.clear();
+	deathLocations.clear();
 	returnLocations.clear();
 	teleportQueue.disable();
 
@@ -154,6 +157,24 @@ public class PlacesPlugin extends JavaPlugin {
 
     private void clearReturn(Player player) {
 	returnLocations.remove(player.getName());
+    }
+
+
+
+    private void saveDeath(Player player) {
+	deathLocations.put(player.getName(), player.getLocation());
+    }
+
+
+
+    private Location getDeath(Player player) {
+	return deathLocations.get(player.getName());
+    }
+
+
+
+    private void clearDeath(Player player) {
+	deathLocations.remove(player.getName());
     }
 
 
@@ -319,10 +340,11 @@ public class PlacesPlugin extends JavaPlugin {
 		    return true;
 		}
 
+		msg(p, "Teleporting to", friend.getName() + ".");
+		msg(friend, p.getName(), "is incoming.");
+
 		saveReturn(p);
 		teleportQueue.safeTeleport(p, friend.getLocation());
-		msg(p, "Teleporting to " + n + ".");
-		msg(friend, p.getName() + " is incoming.");
 
 		return true;
 	    }
@@ -338,7 +360,7 @@ public class PlacesPlugin extends JavaPlugin {
 		} else {
 		    saveReturn(p);
 		    teleportQueue.safeTeleport(p, place.getEntrance());
-		    msg(p, "Teleporting to the entrance of " + place.getDisplay());
+		    msg(p, "Teleporting to the entrance of", place.getDisplay());
 		}
 
 		return true;
@@ -439,6 +461,52 @@ public class PlacesPlugin extends JavaPlugin {
 	};
 
 
+	new PlayerCommand(this, "ressurect") {
+	    public boolean run(Player p) {
+		Location r = getDeath(p);
+
+		if(r == null) {
+		    msg(p, "You haven't died recently.");
+
+		} else {
+		    msg(p, "You have returned to the point of your untimely demise.");
+		    log(p.getName(), "has ressurected at", r);
+
+		    clearDeath(p);
+		    teleportQueue.safeTeleport(p, r);
+		}
+
+		return true;
+	    }
+
+	    public boolean run(Player p, String f) {
+		if(f.equals("me"))
+		    return run(p);
+
+		Player friend = getServer().getPlayer(f);
+		if(friend == null) {
+		    msg(p, "Player not found:", f);
+		    return true;
+		}
+
+		Location r = getDeath(friend);
+		if(r == null) {
+		    msg(p, friend.getName(), "has not died recently.");
+
+		} else {
+		    msg(friend, "You are being sent to the point of your untimely demise.");
+		    msg(p, "You are sending", friend.getName(), "to the point of their untimely demise.");
+		    log(p.getName(), "has ressurected", friend.getName(), "at", r);
+
+		    clearDeath(friend);
+		    teleportQueue.safeTeleport(friend, r);
+		}
+
+		return true;
+	    }
+	};
+
+
 	new PlayerCommand(this, "spawn") {
 	    public boolean run(Player p) {
 		Place place = getPlace(p, SPAWN_NAME);
@@ -488,10 +556,15 @@ public class PlacesPlugin extends JavaPlugin {
 
 	new PlayerCommand(this, "add-place") {
 	    public boolean run(Player p, String n) {
-		return run(p, n, "0");
+		return run(p, n, "0", null);
 	    }
 
 	    public boolean run(Player p, String n, String weight) {
+		return run(p, n, weight, null);
+	    }
+
+	    public boolean run(Player p, String n, String weight, String title) {
+
 		Place place = getPlace(p, n);
 		if(place != null) {
 		    msg(p, "A place with this name already exists: " + n);
@@ -503,6 +576,7 @@ public class PlacesPlugin extends JavaPlugin {
 		Location l = p.getLocation();
 		place = createPlace(n, l);
 		place.setWeight(w);
+		place.setTitle(title);
 		updatePlace(place);
 
 		msg(p, "Created new place: " + n);
@@ -708,7 +782,7 @@ public class PlacesPlugin extends JavaPlugin {
 
 
 
-	new PlayerCommand(this, "list-places") {
+	new PlayerCommand(this, "find-place") {
 	    public boolean run(Player p) {
 		World world = p.getWorld();
 		Map<String,Place> places = placesByName.get(world.getName());
@@ -888,6 +962,8 @@ public class PlacesPlugin extends JavaPlugin {
 	Player player = pre.getPlayer();
 	Location deathpoint = player.getLocation();
 	Nearness near = getNearestGraveyard(deathpoint);
+
+	saveDeath(player);
 
 	if(near != null) {
 	    Place place = near.getPlace();

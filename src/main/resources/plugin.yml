@@ -64,8 +64,8 @@ commands:
     permission: preoccupied.places.setspawn
     
   add-place:
-    description: Creates a new place and optionally sets its weight
-    usage: /add-place PLACE_NAME [WEIGHT]
+    description: Creates a new place and optionally sets its weight and title
+    usage: /add-place PLACE_NAME [WEIGHT [TITLE]]
     permission: preoccupied.places.edit
 
   remove-place:
@@ -106,10 +106,9 @@ commands:
     usage: /set-place-title PLACE_NAME [TITLE]
     permission: preoccupied.places.edit
 
-  list-places:
+  find-place:
     description: Prints the list of places on a world
-    usage: /list-places [WORLD] PATTERN
-    aliases: [find-place, ]
+    usage: /find-place [WORLD] PATTERN
     permission: preoccupied.places.info
     
   place-info:
@@ -142,6 +141,11 @@ commands:
     usage: /unjail PLAYER_NAME
     permission: preoccupied.places.jail
 
+  ressurect:
+    description: Return player (or yourself) to the location of their recent demise.
+    usage: /ressurect [PLAYER_NAME]
+    aliases: [undie, rez]
+    permission: preoccupied.places.ressurect
 
 
 permissions:
