@@ -1,6 +1,6 @@
 name: Places
 main: net.preoccupied.bukkit.places.PlacesPlugin
-version: 0.1
+version: 0.2
 author: obriencj@gmail.com
 database: true
 description: Location-based graveyards, world-specific homes and spawns, and place naming.
@@ -145,7 +145,7 @@ commands:
     description: Return player (or yourself) to the location of their recent demise.
     usage: /resurrect [PLAYER_NAME]
     aliases: [undie, rez]
-    permission: preoccupied.places.ressurect
+    permission: preoccupied.places.resurrect
 
 
 permissions:
@@ -245,7 +245,7 @@ permissions:
   preoccupied.places.jail:
     default: false
 
-  preoccupied.places.ressurrect:
+  preoccupied.places.resurrect:
     default: false
     
     
