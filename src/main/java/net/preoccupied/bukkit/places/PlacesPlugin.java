@@ -494,12 +494,14 @@ public class PlacesPlugin extends JavaPlugin {
 		    msg(p, friend.getName(), "has not died recently.");
 
 		} else {
-		    msg(friend, "You are being sent to the point of your untimely demise.");
-		    msg(p, "You are sending", friend.getName(), "to the point of their untimely demise.");
-		    log(p.getName(), "has ressurected", friend.getName(), "at", r);
-
+		    invitations.put(friend.getName(), r);
 		    clearDeath(friend);
-		    teleportQueue.safeTeleport(friend, r);
+
+		    msg(friend, "You have been offered a resurrection.",
+			"You may /accept and be teleported to the location of your untimely demise.");
+		    msg(p, "You have offered a resurrection to ", friend.getName()+".");
+
+		    log(p.getName(), "has ressurected", friend.getName(), "at", r);
 		}
 
 		return true;
